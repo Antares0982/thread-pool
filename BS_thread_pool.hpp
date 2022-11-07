@@ -464,6 +464,7 @@ public:
     [[nodiscard]] std::future<R> submit(F&& task, A&&... args)
     {
         auto task_promise = new std::promise<R>;
+        auto future = task_promise->get_future();
         push_task(
             [task_promise](auto&& task_inner, auto&&... argss)
             {
@@ -491,7 +492,7 @@ public:
                 }
                 delete task_promise;
             }, std::forward<F>(task), std::forward<A>(args)...);
-        return task_promise->get_future();
+        return future;
     }
 
     /**
