@@ -508,6 +508,7 @@ public:
     template <typename F, typename... A, typename R = std::invoke_result_t<std::decay_t<F>, std::decay_t<A>...>>
     [[nodiscard]] std::future<R> submit_with_promise(std::promise<R>* task_promise, F&& task, A&&... args)
     {
+        auto future = task_promise->get_future();
         push_task(
             [task_promise](auto&& task_inner, auto&&... argss)
             {
@@ -535,7 +536,7 @@ public:
                 }
                 delete task_promise;
             }, std::forward<F>(task), std::forward<A>(args)...);
-        return task_promise->get_future();
+        return future;
     }
 
     /**
