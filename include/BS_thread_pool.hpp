@@ -593,7 +593,8 @@ public:
     template <typename F, typename R = std::invoke_result_t<std::decay_t<F>>>
     [[nodiscard]] std::future<R> submit_task(F&& task BS_THREAD_POOL_PRIORITY_INPUT)
     {
-        const std::shared_ptr<std::promise<R>> task_promise = std::make_shared<std::promise<R>>();
+        auto task_promise = new std::promise<R>;
+        auto future = task_promise->get_future();
         detach_task(
             [task = std::forward<F>(task), task_promise]
             {
@@ -619,8 +620,9 @@ public:
                     {
                     }
                 }
+                delete task_promise;
             } BS_THREAD_POOL_PRIORITY_OUTPUT);
-        return task_promise->get_future();
+        return future;
     }
 
     /**
